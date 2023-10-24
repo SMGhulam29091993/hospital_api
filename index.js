@@ -5,9 +5,16 @@ const app = express();
 
 const db = require('./config/mongoose');
 
+const passport = require('passport');
+const passportJWTStrategy = require('./config/passport-jwt');
+
+
+
 
 app.use(bodyParser.urlencoded({extended : false}));
 app.use(bodyParser.json());
+
+
 
 app.use('/', require('./routes'));
 

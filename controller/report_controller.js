@@ -4,11 +4,13 @@ const Report = require('../model/report');
 
 // Get reports by status
 exports.getReportsByStatus = async (req, res) => {
-    try {
-      const { status } = req.params;
-      const reports = await Report.find({ status });
-      res.json(reports);
-    } catch (err) {
-      res.status(500).json({ error: 'An error occurred' });
-    }
-  };
+  try {
+    // Assuming req.params.status is the status you want to filter by
+    const status = req.params.status;
+
+    const reports = await Report.find({ status: status });
+    res.json(reports);
+  } catch (err) {
+    res.status(500).json({ error: 'An error occurred' });
+  }
+};

@@ -1,23 +1,30 @@
 const passport = require('passport');
 const Doctor = require('../model/doctor');
+const JWTStrategy = require('passport-jwt').Strategy;
+const ExtractJWT = require('passport-jwt').ExtractJwt;
+require('dotenv').config();
 
-let JwtStrategy = require('passport-jwt').Strategy,
-    ExtractJwt = require('passport-jwt').ExtractJwt;
-let opts = {}
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-opts.secretOrKey = 'secret';
 
-passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
-    Doctor.findOne({id: jwt_payload.id}, function(err, user) {
-        if (err) {
-            return done(err, false);
-        }
-        if (user) {
+const opts = {
+    jwtFromRequest : ExtractJWT.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.SECRETORKEY,
+}
+    
+
+
+passport.use(new JWTStrategy(opts, (jwtPayLoad,done)=>{
+    let user = Doctor.findById(jwtPayLoad._id)
+    .catch(err=>{
+        console.log('Error in finding the user in JWT : ',err);
+    })
+    .then(user=>{
+        if(user){
             return done(null, user);
-        } else {
+        }else{
             return done(null, false);
         }
-    });
+    })
 }));
+
 
 module.exports = passport;

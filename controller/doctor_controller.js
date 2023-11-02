@@ -2,15 +2,14 @@ const Doctor = require('../model/doctor');
 const Patient = require('../model/patient');
 const Report = require('../model/report');
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 
 
 // Register a new doctor
 module.exports.register = async (req, res) => {
     try {
-      const { email, password, name, specialization } = req.body;
-      // Hash the password before saving it in the database
-      const doctor = new Doctor({ email, password, name, specialization });
+      const doctor = await Doctor.create(req.body);
       await doctor.save();
       res.status(201).json({ message: 'Doctor registered successfully' });
     } catch (err) {
@@ -20,13 +19,26 @@ module.exports.register = async (req, res) => {
   
   // Doctor login
 module.exports.login = async (req, res) => {
-    const { email, password } = req.body;
-    const doctor = await Doctor.findOne({ email });
+    try{
+      let user = await Doctor.findOne({email : req.body.email});
+
+      if (!user || user.password != req.body.password){
+          return res.status(422).json({
+              message : 'Invalid username/password'
+          })
+      }
+      return res.status(200).json({
+          message : 'Successfully signed in and here is your token',
+          data : {
+              token : jwt.sign(user.toJSON(),process.env.SECRETORKEY, {expiresIn : 100000})
+          }
+  })
+  }catch(err){
+      console.log(`Error in finding the user ${err}`);
+      return res.status(500).json({
+          message : 'Internal Server Error'
+      })
+  }
+}
+
   
-    if (!doctor || doctor.password !== password) {
-      return res.status(401).json({ error: 'Invalid username or password' });
-    }
-  
-    const token = jwt.sign({ email: doctor.email }, 'your-secret-key'); // Replace with a secret key
-    res.json({ token });
-  };

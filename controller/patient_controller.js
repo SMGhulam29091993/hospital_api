@@ -5,11 +5,12 @@ const Report = require('../model/report');
 // Register a new patient
 module.exports.register_patient = async (req, res) => {
     try {
+
       const { phoneNumber, name, age, gender } = req.body;
       let patient = await Patient.findOne({ phoneNumber });
       
       if (!patient) {
-        patient = new Patient({ phoneNumber, name, age, gender });
+        patient = await Patient.create({ phoneNumber, name, age, gender });
         await patient.save();
       }
   
@@ -20,11 +21,11 @@ module.exports.register_patient = async (req, res) => {
   };
 
   // Create a patient report
-module.exports.createReport = async (req, res) => {
+  module.exports.createReport = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params.id;
         const { doctor, status } = req.body;
-        const report = new Report({ patient: id, doctor, status, date: new Date() });
+        const report = await Report.create({ patient: id, doctor, status, date: new Date() });
         await report.save();
         res.status(201).json({ message: 'Report created successfully', report });
     } catch (err) {
@@ -35,7 +36,7 @@ module.exports.createReport = async (req, res) => {
   // Get all reports of a patient
 module.exports.getAllReports = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params.id;
         const reports = await Report.find({ patient: id }).sort({ date: 1 });
         res.json(reports);
     } catch (err) {
